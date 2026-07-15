@@ -60,6 +60,26 @@ class ContentModerationAgents:
     Each agent is a function that takes the current ContentState and returns an updated ContentState.
     """
 
+    def _extract_response_text(self, response) -> str:
+        """Safely extract text from LLM response, handling both string and list content."""
+        content = response.content
+
+        if isinstance(content, str):
+            return content
+        elif isinstance(content, list):
+            # Extract text from list of content blocks
+            text_parts = []
+            for block in content:
+                if isinstance(block, str):
+                    text_parts.append(block)
+                elif isinstance(block, dict) and block.get("type") == "text":
+                    text_parts.append(block.get("text", ""))
+                elif hasattr(block, "text"):
+                    text_parts.append(block.text)
+            return "\n".join(text_parts)
+        else:
+            return str(content)
+
     def __init__(self):
         """Initialize the agents with LLM and memory manager."""
         logger.info("\nInitializing ContentModerationAgents...")
@@ -71,7 +91,7 @@ class ContentModerationAgents:
         logger.info("Initializing LLM...")
         try:
             self.llm_flash = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",
+                model="gemini-3-flash-preview",
                 temperature=0.1,
                 google_api_key=google_api_key
             )
@@ -81,7 +101,7 @@ class ContentModerationAgents:
 
         try:
             self.llm_pro = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash",
+                model="gemini-3-flash-preview",
                 temperature=0.1,
                 google_api_key=google_api_key
             )
@@ -175,7 +195,7 @@ class ContentModerationAgents:
             )
 
             response = self.llm_flash.invoke(topic_extraction_prompt)
-            analysis = response.content
+            analysis = self._extract_response_text(response)
 
             # Parse LLM response using structured parser
             parsed_response = parse_llm_response(analysis, TopicExtractionResponse)
@@ -277,7 +297,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_flash.invoke(final_prompt)
-            reasoning = response.content
+            reasoning = self._extract_response_text(response)
 
             # Determine decision
             if "FLAG" in reasoning or state["explicit_content_detected"]:
@@ -448,7 +468,7 @@ class ContentModerationAgents:
             )
 
             response = self.llm_pro.invoke(toxicity_prompt)
-            analysis = response.content
+            analysis = self._extract_response_text(response)
 
             # Parse structured response
             parsed_toxicity = parse_llm_response(analysis, ToxicityAnalysisResponse)
@@ -652,7 +672,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_pro.invoke(analysis_prompt)
-            analysis = response.content
+            analysis = self._extract_response_text(response)
 
             # Store recommended action
             if "BAN_USER" in analysis:
@@ -851,7 +871,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_flash.invoke(analysis_prompt)
-            analysis = response.content
+            analysis = self._extract_response_text(response)
 
             # Determine confidence
             confidence = 0.80
@@ -995,7 +1015,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_pro.invoke(analysis_prompt)
-            analysis = response.content
+            analysis = self._extract_response_text(response)
 
             # Determine decision
             if "OVERTURN" in analysis:
@@ -1139,7 +1159,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_flash.invoke(action_reason_prompt)
-            action_reason = response.content
+            action_reason = self._extract_response_text(response)
 
             state["action_reason"] = action_reason
             state["action_timestamp"] = datetime.now().isoformat()
@@ -1313,7 +1333,7 @@ class ContentModerationAgents:
             """
 
             response = self.llm_pro.invoke(synthesis_prompt)
-            think_output = response.content
+            think_output = self._extract_response_text(response)
 
             # ═══════════════════════════════════════════════════
             # ACT PHASE - Make consolidated decision
@@ -1942,7 +1962,7 @@ Provide ONLY the JSON response, no additional text.
 
             # Invoke LLM
             response = self.llm_flash.invoke(fast_mode_prompt)
-            response_text = response.content.strip()
+            response_text = self._extract_response_text(response).strip()
 
             # Parse JSON response
             if response_text.startswith("```json"):
