@@ -13,7 +13,6 @@
 
 ## 📖 Table of Contents
 - [🎯 Overview](#🎯-overview)
-- [⚡ Quick Start](#⚡-quick-start)
 - [✨ Features](#✨-features)
 - [🏗️ Architecture & Agents](#🏗️-architecture--agents)
 - [🧑‍⚖️ Human-in-the-Loop (HITL) System](#🧑‍⚖️-human-in-the-loop-hitl-system)
@@ -22,10 +21,7 @@
 - [🛠️ Technology Stack](#🛠️-technology-stack)
 - [🎓 Project Highlights & Learning Outcomes](#🎓-project-highlights--learning-outcomes)
 - [📈 Use Cases](#📈-use-cases)
-- [🎓 Skills Demonstrated](#🎓-skills-demonstrated)
-- [🔧 Troubleshooting](#🔧-troubleshooting)
-- [🗑️ Database Cleanup](#🗑️-database-cleanup)
-- [📝 Resume Talking Points](#📝-resume-talking-points)
+
 
 ## 🎯 Overview
 
